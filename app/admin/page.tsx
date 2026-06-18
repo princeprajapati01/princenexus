@@ -240,7 +240,7 @@ export default function AdminDashboard() {
         setResumeMessage({ type: "success", text: "Resume PDF uploaded successfully!" });
         setResumeFile(null);
       } else {
-        setResumeMessage({ type: "error", text: data.error || "Upload failed." });
+        setResumeMessage({ type: "error", text: `Upload failed: ${data.error || ""} ${data.details || ""}` });
       }
     } catch (e) {
       setResumeMessage({ type: "error", text: "Connection error." });
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
       if (data.success) {
         setProjectForm(prev => ({ ...prev, coverImage: data.url }));
       } else {
-        alert(data.error || "Failed to upload cover image.");
+        alert(`Failed to upload cover image: ${data.error || ""} ${data.details || ""}`);
       }
     } catch (err) {
       console.error(err);
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
         });
         const uploadData = await uploadRes.json();
         if (!uploadData.success) {
-          alert("Failed to upload image file");
+          alert(`Failed to upload image file: ${uploadData.error || ""} ${uploadData.details || ""}`);
           setActionLoading(false);
           return;
         }
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
           });
           const uploadData = await uploadRes.json();
           if (!uploadData.success) {
-            alert("Failed to upload video file");
+            alert(`Failed to upload video file: ${uploadData.error || ""} ${uploadData.details || ""}`);
             setActionLoading(false);
             return;
           }
