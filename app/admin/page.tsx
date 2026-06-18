@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -561,7 +562,7 @@ export default function AdminDashboard() {
               })}
 
               <button 
-                onClick={() => window.location.href = "/"}
+                onClick={() => signOut({ callbackUrl: "/" })}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all duration-200 mt-8"
               >
                 <LogOut size={18} />
