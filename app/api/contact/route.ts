@@ -36,10 +36,14 @@ export async function POST(request: NextRequest) {
       { success: true, message: 'Message sent successfully', data: newMessage },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Contact form error:', error);
     return NextResponse.json(
-      { error: 'Failed to send message' },
+      { 
+        error: 'Failed to send message', 
+        details: error instanceof Error ? error.message : String(error),
+        code: error?.code
+      },
       { status: 500 }
     );
   }
@@ -55,10 +59,14 @@ export async function GET() {
     });
 
     return NextResponse.json({ success: true, data: messages });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Fetch messages error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch messages' },
+      { 
+        error: 'Failed to fetch messages', 
+        details: error instanceof Error ? error.message : String(error),
+        code: error?.code
+      },
       { status: 500 }
     );
   }

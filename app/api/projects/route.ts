@@ -37,10 +37,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, data: projects });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Fetch projects error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch projects' },
+      { 
+        error: 'Failed to fetch projects', 
+        details: error instanceof Error ? error.message : String(error),
+        code: error?.code,
+        meta: error?.meta
+      },
       { status: 500 }
     );
   }
