@@ -39,61 +39,7 @@ A world-class portfolio platform built with Next.js 15, TypeScript, and Tailwind
 ### Deployment
 - **Vercel** - Optimized hosting platform
 
-## 📦 Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/princeprajapati/prince-nexus.git
-cd prince-nexus
-```
-
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Set up environment variables**
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your credentials.
-
-> [!TIP]
-> To generate a secure `NEXTAUTH_SECRET`, open your terminal and run:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-> ```
-
-```env
-# Database (Get from neon.tech)
-DATABASE_URL="postgresql://user:password@host/database"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-generated-secret-here"
-
-# UploadThing (Get from uploadthing.com)
-UPLOADTHING_TOKEN="your-token-here"
-
-# Admin Credentials
-ADMIN_EMAIL="admin@princenexus.com"
-ADMIN_PASSWORD="changeme"
-```
-
-4. **Set up and Seed the Database**
-```bash
-npx prisma generate
-npx prisma db push
-npm run db:seed
-```
-
-5. **Run the development server**
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see your portfolio.
+open https://princenexus.vercel.app/ to see my portfolio.
 
 ## 🏗️ Project Structure
 
@@ -280,10 +226,10 @@ MIT License - feel free to use this as inspiration for your own portfolio.
 ## 👤 Author
 
 **Prince Prajapati**
-- Portfolio: [princenexus.com](https://princenexus.com)
-- GitHub: [@princeprajapati](https://github.com/princeprajapati)
-- LinkedIn: [Prince Prajapati](https://linkedin.com/in/princeprajapati)
-- Email: prince@princenexus.com
+- Portfolio: [princenexus.com](https://princenexus.vercel.app/)
+- GitHub: [@princeprajapati](https://github.com/princeprajapati01)
+- LinkedIn: [Prince Prajapati](https://www.linkedin.com/in/prince-prajapati-29b4a4272/)
+- Email: pprinceprajapati@gmail.com
 
 ## 🙏 Acknowledgments
 
