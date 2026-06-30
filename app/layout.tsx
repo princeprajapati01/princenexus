@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI Engineer | AI Systems Engineer | AI Innovator",
+  title: "Prince Nexus | AI Engineer & Full-Stack Developer",
   description: "Building intelligent systems for Financial Technology, Natural Language Processing, and Document Intelligence.",
-  keywords: ["AI Engineer", "Full Stack Developer", "Machine Learning", "NLP", "OCR", "Document Intelligence", "Financial Technology"],
+  keywords: ["Prince Nexus", "Prince Prajapati", "AI Engineer", "Full Stack Developer", "Machine Learning", "NLP", "OCR", "Document Intelligence", "Financial Technology"],
   authors: [{ name: "Prince Prajapati" }],
   creator: "Prince Prajapati",
   openGraph: {
