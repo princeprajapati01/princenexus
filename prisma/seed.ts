@@ -182,11 +182,28 @@ async function main() {
     });
   }
 
+  // Create Admin User
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@princenexus.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'changeme';
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      role: 'admin',
+    },
+    create: {
+      email: adminEmail,
+      name: 'Prince Nexus Admin',
+      role: 'admin',
+      password: adminPassword,
+    },
+  });
+
   console.log('✅ Database seeded successfully!');
   console.log(`Created projects: ${[billVaultAI, credMint, taskClassification].map(p => p.title).join(', ')}`);
   console.log(`Created ${skills.length} skills`);
   console.log(`Created ${timeline.length} timeline items`);
   console.log(`Created ${settings.length} settings`);
+  console.log(`Admin user ensured: ${adminEmail}`);
 }
 
 main()

@@ -89,6 +89,7 @@ export default function AdminDashboard() {
   const [settings, setSettings] = useState<SettingsMap>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [adminUser, setAdminUser] = useState<{ email: string; name?: string } | null>(null);
 
   // Modal / Form States
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -133,9 +134,43 @@ export default function AdminDashboard() {
     order: 0
   });
 
+  const checkSession = async () => {
+    try {
+      const res = await fetch("/api/auth/session");
+      if (!res.ok) {
+        window.location.href = "/admin/login";
+        return false;
+      }
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setAdminUser(data.user);
+        return true;
+      } else {
+        window.location.href = "/admin/login";
+        return false;
+      }
+    } catch {
+      window.location.href = "/admin/login";
+      return false;
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      console.error("Logout error", e);
+    } finally {
+      window.location.href = "/admin/login";
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
+      const isAuthed = await checkSession();
+      if (!isAuthed) return;
+
       const [projRes, msgRes, setRes] = await Promise.all([
         fetch("/api/projects?published=false"),
         fetch("/api/contact"),
@@ -560,13 +595,44 @@ export default function AdminDashboard() {
                 );
               })}
 
-              <button 
-                onClick={() => window.location.href = "/"}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all duration-200 mt-8"
-              >
-                <LogOut size={18} />
-                <span>Exit Dashboard</span>
-              </button>
+              {/* Admin Profile & Exit Actions */}
+              <div className="pt-6 mt-6 border-t border-white/10 space-y-2">
+                {/* Admin Status Card */}
+                <div className="px-4 py-3 rounded-xl bg-white/[0.03] border border-white/5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                      Secure Admin
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 truncate font-mono">
+                    {adminUser?.email || "admin@princenexus.com"}
+                  </p>
+                </div>
+
+                {/* View Live Portfolio */}
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <ExternalLink size={16} />
+                    <span>View Live Site</span>
+                  </div>
+                </a>
+
+                {/* Logout Button */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 text-sm font-medium"
+                >
+                  <LogOut size={16} />
+                  <span>Log Out</span>
+                </button>
+              </div>
             </nav>
           </div>
         </aside>
