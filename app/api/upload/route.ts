@@ -9,7 +9,20 @@ export async function POST(request: NextRequest) {
     const type = formData.get('type') as string | null; // 'resume' or 'media'
 
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
+    }
+
+    // Check file size (Vercel serverless function maximum limit is 4.5 MB)
+    const MAX_SIZE_BYTES = 4.5 * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `File size (${sizeMB} MB) exceeds the 4.5 MB direct upload limit on Vercel. For demo videos (up to 200MB+), please host on YouTube, Google Drive, Vimeo, or Cloud storage and paste the link.`,
+        },
+        { status: 413 }
+      );
     }
 
     const bytes = await file.arrayBuffer();
@@ -51,10 +64,14 @@ export async function POST(request: NextRequest) {
         url: `/uploads/${uniqueName}`,
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('File upload error:', error);
+    const isReadOnlyFs = error?.code === 'EROFS';
+    const message = isReadOnlyFs
+      ? 'Vercel serverless environment does not support local disk writes. Please provide a YouTube, Google Drive, or Cloud video link.'
+      : (error?.message || 'Failed to upload file');
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { success: false, error: message },
       { status: 500 }
     );
   }

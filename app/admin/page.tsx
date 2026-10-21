@@ -26,8 +26,12 @@ import {
   Github,
   Linkedin,
   Eye,
-  EyeOff
+  EyeOff,
+  AlertTriangle,
+  Link2,
+  Play
 } from "lucide-react";
+import { formatVideoUrl } from "@/lib/video";
 
 interface ProjectImage {
   id: string;
@@ -103,6 +107,7 @@ export default function AdminDashboard() {
   const [mediaCaption, setMediaCaption] = useState("");
   const [mediaTargetType, setMediaTargetType] = useState<"image" | "video">("image");
   const [videoUrlText, setVideoUrlText] = useState("");
+  const [videoSourceMode, setVideoSourceMode] = useState<"url" | "file">("url");
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -396,8 +401,22 @@ export default function AdminDashboard() {
         }
         fileUrl = uploadData.url;
       } else if (mediaTargetType === "video") {
-        if (mediaUploadFile) {
-          // Upload video file
+        if (videoSourceMode === "file" && mediaUploadFile) {
+          // Check file size (Vercel serverless limit is 4.5 MB)
+          if (mediaUploadFile.size > 4.5 * 1024 * 1024) {
+            const sizeMB = (mediaUploadFile.size / (1024 * 1024)).toFixed(1);
+            alert(
+              `⚠️ Video file size (${sizeMB} MB) exceeds Vercel's 4.5 MB direct upload limit.\n\n` +
+              `For large demo videos (up to 200MB+):\n` +
+              `1. Upload to YouTube (Unlisted or Public), Google Drive, or Vimeo.\n` +
+              `2. Switch to the 'Video Link / Embed' tab and paste the link.\n\n` +
+              `Your video will stream instantly in full HD without buffering!`
+            );
+            setActionLoading(false);
+            return;
+          }
+
+          // Upload small video clip
           const formData = new FormData();
           formData.append("file", mediaUploadFile);
           formData.append("type", "media");
@@ -408,14 +427,20 @@ export default function AdminDashboard() {
           });
           const uploadData = await uploadRes.json();
           if (!uploadData.success) {
-            alert("Failed to upload video file");
+            alert(uploadData.error || "Failed to upload video file");
             setActionLoading(false);
             return;
           }
           fileUrl = uploadData.url;
         } else {
           // Use link
-          fileUrl = videoUrlText;
+          if (!videoUrlText || !videoUrlText.trim()) {
+            alert("Please paste a valid video link (YouTube, Google Drive, Vimeo, or direct MP4 URL)");
+            setActionLoading(false);
+            return;
+          }
+          const formatted = formatVideoUrl(videoUrlText.trim());
+          fileUrl = formatted.embedUrl || videoUrlText.trim();
         }
       }
 
@@ -889,39 +914,126 @@ export default function AdminDashboard() {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          <div className="border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center bg-black/20">
-                            <VideoIcon size={32} className="text-gray-500 mb-3" />
-                            <label className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer border border-white/10">
-                              Upload Video File
-                              <input
-                                type="file"
-                                accept="video/*"
-                                onChange={(e) => setMediaUploadFile(e.target.files?.[0] || null)}
-                                className="hidden"
-                              />
-                            </label>
-                            {mediaUploadFile && (
-                              <p className="text-blue-400 text-sm mt-3 font-semibold flex items-center gap-1.5">
-                                <Check size={14} /> {mediaUploadFile.name}
-                              </p>
-                            )}
+                          {/* Video Mode Selector */}
+                          <div className="flex gap-2 p-1 bg-white/[0.03] border border-white/10 rounded-xl">
+                            <button
+                              type="button"
+                              onClick={() => setVideoSourceMode("url")}
+                              className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                                videoSourceMode === "url"
+                                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                  : "text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              <Link2 size={14} />
+                              <span>Video Link / Embed (Best for 200MB+)</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setVideoSourceMode("file")}
+                              className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                                videoSourceMode === "file"
+                                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                                  : "text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              <Upload size={14} />
+                              <span>Direct File Upload (&lt; 4.5MB)</span>
+                            </button>
                           </div>
-                          
-                          <div className="text-center text-xs text-gray-500 font-bold uppercase">OR PROVIDE EMBED/LINK URL</div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-400 mb-1">Video Link URL</label>
-                            <input
-                              type="text"
-                              value={videoUrlText}
-                              onChange={(e) => {
-                                setVideoUrlText(e.target.value);
-                                if (e.target.value) setMediaUploadFile(null); // clear uploaded file
-                              }}
-                              placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ"
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                            />
-                          </div>
+
+                          {videoSourceMode === "url" ? (
+                            <div className="space-y-3">
+                              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300">
+                                <span className="font-semibold block mb-1">💡 Supported Video Platforms:</span>
+                                <span>Paste any link from YouTube, Google Drive, Vimeo, Loom, or direct MP4/cloud storage. Our player automatically configures it!</span>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold text-gray-400 mb-1">Video URL</label>
+                                <input
+                                  type="text"
+                                  value={videoUrlText}
+                                  onChange={(e) => {
+                                    setVideoUrlText(e.target.value);
+                                    if (e.target.value) setMediaUploadFile(null);
+                                  }}
+                                  placeholder="e.g. https://www.youtube.com/watch?v=... or Google Drive / Vimeo link"
+                                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm"
+                                />
+                              </div>
+
+                              {/* Live Video Preview Box */}
+                              {videoUrlText.trim() && (() => {
+                                const preview = formatVideoUrl(videoUrlText.trim());
+                                return (
+                                  <div className="mt-2 p-3 rounded-xl bg-black/60 border border-white/10">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="text-xs font-semibold text-blue-400 flex items-center gap-1.5">
+                                        <Play size={12} /> Live Preview ({preview.type.toUpperCase()})
+                                      </span>
+                                      <span className="text-[11px] text-emerald-400 font-mono">Streamable</span>
+                                    </div>
+                                    <div className="aspect-video w-full rounded-lg overflow-hidden bg-black border border-white/10">
+                                      {preview.isIframe ? (
+                                        <iframe
+                                          src={preview.embedUrl}
+                                          title="Preview"
+                                          className="w-full h-full border-0"
+                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                          allowFullScreen
+                                        />
+                                      ) : (
+                                        <video src={preview.embedUrl} controls className="w-full h-full object-contain" />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div className="border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center bg-black/20 text-center">
+                                <VideoIcon size={32} className="text-gray-500 mb-3" />
+                                <label className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer border border-white/10">
+                                  Select Short Video Clip
+                                  <input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0] || null;
+                                      setMediaUploadFile(file);
+                                      if (file) setVideoUrlText("");
+                                    }}
+                                    className="hidden"
+                                  />
+                                </label>
+                                {mediaUploadFile && (
+                                  <p className="text-blue-400 text-sm mt-3 font-semibold flex items-center gap-1.5">
+                                    <Check size={14} /> {mediaUploadFile.name} ({(mediaUploadFile.size / (1024 * 1024)).toFixed(1)} MB)
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Size Limit Warning */}
+                              {mediaUploadFile && mediaUploadFile.size > 4.5 * 1024 * 1024 && (
+                                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5">
+                                  <AlertTriangle size={18} className="text-red-400 shrink-0 mt-0.5" />
+                                  <div>
+                                    <p className="font-bold text-white text-sm">
+                                      File is {(mediaUploadFile.size / (1024 * 1024)).toFixed(1)} MB (Exceeds Vercel 4.5 MB Limit)
+                                    </p>
+                                    <p className="mt-1 text-gray-300">
+                                      Vercel Serverless Functions enforce a 4.5 MB request payload limit and reject direct 200MB uploads.
+                                    </p>
+                                    <p className="mt-1 font-semibold text-yellow-300">
+                                      👉 Solution: Upload this video to YouTube (free, unlisted/public) or Google Drive, then switch to the &quot;Video Link&quot; tab above and paste the URL.
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1335,10 +1447,28 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {allVideos.map(vid => (
+                      {allVideos.map(vid => {
+                        const { embedUrl, isIframe } = formatVideoUrl(vid.url);
+                        return (
                         <div key={vid.id} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between">
-                          <div className="relative aspect-video bg-black flex items-center justify-center">
-                            <VideoIcon size={40} className="text-gray-600" />
+                          <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                            {isIframe ? (
+                              <iframe
+                                src={embedUrl}
+                                title={vid.caption || vid.projectTitle || "Video"}
+                                className="w-full h-full border-0 aspect-video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video
+                                src={embedUrl}
+                                controls
+                                playsInline
+                                preload="metadata"
+                                className="w-full h-full object-contain bg-black"
+                              />
+                            )}
                           </div>
                           <div className="p-4 bg-black/30">
                             <span className="text-xs text-blue-400 font-bold block mb-1 uppercase">
@@ -1363,7 +1493,8 @@ export default function AdminDashboard() {
                             </button>
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
                     </div>
                   )}
                 </motion.div>

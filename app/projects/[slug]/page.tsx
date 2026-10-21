@@ -6,6 +6,7 @@ import { ArrowLeft, Github, ExternalLink, Calendar } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { formatVideoUrl } from "@/lib/video";
 
 // This would normally come from database
 const projectsData: { [key: string]: any } = {
@@ -250,23 +251,25 @@ export default function ProjectDetailPage() {
                   <h3 className="text-xl font-semibold text-gray-300 mb-4">Video Demos</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {project.videos.map((vid: any, idx: number) => {
-                      const isEmbed = vid.url.includes("youtube.com/embed") || vid.url.includes("player.vimeo.com");
+                      const { embedUrl, isIframe } = formatVideoUrl(vid.url);
                       return (
-                        <div key={vid.id || idx} className="rounded-xl overflow-hidden border border-white/10 bg-black/50 aspect-video relative flex flex-col justify-between">
-                          <div className="flex-1 min-h-[200px]">
-                            {isEmbed ? (
+                        <div key={vid.id || idx} className="rounded-xl overflow-hidden border border-white/10 bg-black/50 aspect-video relative flex flex-col justify-between shadow-lg">
+                          <div className="flex-1 min-h-[200px] w-full h-full bg-black">
+                            {isIframe ? (
                               <iframe
-                                src={vid.url}
+                                src={embedUrl}
                                 title={vid.caption || "Demo video"}
-                                className="w-full h-full border-0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                className="w-full h-full border-0 aspect-video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen
                               />
                             ) : (
                               <video
-                                src={vid.url}
+                                src={embedUrl}
                                 controls
-                                className="w-full h-full"
+                                playsInline
+                                preload="metadata"
+                                className="w-full h-full object-contain bg-black"
                               />
                             )}
                           </div>
