@@ -944,9 +944,14 @@ export default function AdminDashboard() {
 
                           {videoSourceMode === "url" ? (
                             <div className="space-y-3">
-                              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300">
-                                <span className="font-semibold block mb-1">💡 Supported Video Platforms:</span>
-                                <span>Paste any link from YouTube, Google Drive, Vimeo, Loom, or direct MP4/cloud storage. Our player automatically configures it!</span>
+                              <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 space-y-1.5">
+                                <span className="font-bold text-white block">💡 Video Platform Guidelines:</span>
+                                <p>
+                                  • <strong className="text-white">YouTube (Unlisted):</strong> Best choice! Instant streaming with zero processing wait or bandwidth quota limits.
+                                </p>
+                                <p>
+                                  • <strong className="text-white">Google Drive:</strong> Takes 15–30 minutes for Google to process/transcode 200MB videos after upload before playback works.
+                                </p>
                               </div>
 
                               <div>

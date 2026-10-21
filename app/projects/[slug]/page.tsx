@@ -251,10 +251,10 @@ export default function ProjectDetailPage() {
                   <h3 className="text-xl font-semibold text-gray-300 mb-4">Video Demos</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {project.videos.map((vid: any, idx: number) => {
-                      const { embedUrl, isIframe } = formatVideoUrl(vid.url);
+                      const { embedUrl, externalUrl, isIframe, type } = formatVideoUrl(vid.url);
                       return (
                         <div key={vid.id || idx} className="rounded-xl overflow-hidden border border-white/10 bg-black/50 aspect-video relative flex flex-col justify-between shadow-lg">
-                          <div className="flex-1 min-h-[200px] w-full h-full bg-black">
+                          <div className="flex-1 min-h-[200px] w-full h-full bg-black relative">
                             {isIframe ? (
                               <iframe
                                 src={embedUrl}
@@ -273,11 +273,20 @@ export default function ProjectDetailPage() {
                               />
                             )}
                           </div>
-                          {vid.caption && (
-                            <div className="bg-black/60 backdrop-blur-sm p-3 border-t border-white/10">
-                              <p className="text-sm text-gray-300">{vid.caption}</p>
-                            </div>
-                          )}
+                          <div className="bg-black/80 backdrop-blur-sm px-3.5 py-2.5 border-t border-white/10 flex items-center justify-between text-xs">
+                            <p className="text-sm text-gray-300 truncate font-medium">{vid.caption || "Demo Video"}</p>
+                            <a
+                              href={externalUrl || vid.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-semibold shrink-0 ml-3 transition-colors bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10"
+                            >
+                              <span>
+                                {type === "google-drive" ? "Open Drive Link" : type === "youtube" ? "YouTube" : "Open Link"}
+                              </span>
+                              <ExternalLink size={12} />
+                            </a>
+                          </div>
                         </div>
                       );
                     })}
